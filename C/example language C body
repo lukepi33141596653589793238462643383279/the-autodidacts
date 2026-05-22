@@ -1,0 +1,140 @@
+for illustration 
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// --- 1. Definições Básicas ---
+#define MAX_COMPONENTS 100
+#define NAME_LEN 50
+
+typedef struct Component Component;
+
+// Ciclo de vida gerenciado pelo framework
+typedef struct {
+    void (*init)(Component *self);
+    void (*start)(Component *self);
+    void (*update)(Component *self);
+    void (*destroy)(Component *self);
+} ComponentLifecycle;
+
+struct Component {
+    char name[NAME_LEN];
+    int is_initialized;
+    int is_started;
+    void *data; // Dados específicos do componente
+    ComponentLifecycle lifecycle;
+};
+
+// --- 2. Gerenciador do Framework (Container IoC) ---
+typedef struct {
+    Component *components[MAX_COMPONENTS];
+    int count;
+} FrameworkContext;
+
+FrameworkContext* fw_create_context() {
+    FrameworkContext *ctx = (FrameworkContext*)malloc(sizeof(FrameworkContext));
+    ctx->count = 0;
+    return ctx;
+}
+
+void fw_register(FrameworkContext *ctx, Component *comp) {
+    if (ctx->count < MAX_COMPONENTS) {
+        ctx->components[ctx->count++] = comp;
+        printf("[Framework] Componente '%s' registrado.\n", comp->name);
+    }
+}
+
+void fw_init(FrameworkContext *ctx) {
+    for (int i = 0; i < ctx->count; i++) {
+        Component *c = ctx->components[i];
+        if (c->lifecycle.init) c->lifecycle.init(c);
+        c->is_initialized = 1;
+    }
+}
+
+void fw_start(FrameworkContext *ctx) {
+    for (int i = 0; i < ctx->count; i++) {
+        Component *c = ctx->components[i];
+        if (c->is_initialized && !c->is_started) {
+            if (c->lifecycle.start) c->lifecycle.start(c);
+            c->is_started = 1;
+        }
+    }
+}
+
+void fw_loop(FrameworkContext *ctx, int iterations) {
+    for (int iter = 0; iter < iterations; iter++) {
+        printf("\n[Framework] Loop %d...\n", iter + 1);
+        for (int i = 0; i < ctx->count; i++) {
+            Component *c = ctx->components[i];
+            if (c->lifecycle.update) c->lifecycle.update(c);
+        }
+    }
+}
+
+void fw_destroy(FrameworkContext *ctx) {
+    for (int i = 0; i < ctx->count; i++) {
+        Component *c = ctx->components[i];
+        if (c->lifecycle.destroy) c->lifecycle.destroy(c);
+        free(c);
+    }
+    free(ctx);
+    printf("[Framework] Contexto destruído.\n");
+}
+
+// --- 3. Exemplo de Implementação de Componente (Controller) ---
+typedef struct {
+    int request_count;
+} NetworkData;
+
+void net_init(Component *self) {
+    NetworkData *data = (NetworkData*)malloc(sizeof(NetworkData));
+    data->request_count = 0;
+    self->data = data;
+    printf("  -> %s inicializado.\n", self->name);
+}
+
+void net_start(Component *self) {
+    printf("  -> %s iniciado e pronto para conexões.\n", self->name);
+}
+
+void net_update(Component *self) {
+    NetworkData *data = (NetworkData*)self->data;
+    data->request_count++;
+    printf("  -> %s processando requisição %d.\n", self->name, data->request_count);
+}
+
+void net_destroy(Component *self) {
+    free(self->data);
+    printf("  -> %s recursos liberados.\n", self->name);
+}
+
+// --- 4. Função Principal ---
+int main() {
+    FrameworkContext *app = fw_create_context();
+
+    // Criação e configuração do componente
+    Component *net_comp = (Component*)malloc(sizeof(Component));
+    strcpy(net_comp->name, "NetworkController");
+    net_comp->is_initialized = 0;
+    net_comp->is_started = 0;
+    net_comp->lifecycle.init = net_init;
+    net_comp->lifecycle.start = net_start;
+    net_comp->lifecycle.update = net_update;
+    net_comp->lifecycle.destroy = net_destroy;
+
+    // Inversão de Controle: Registra e passa para o Framework gerenciar
+    fw_register(app, net_comp);
+
+    // Ciclo de vida gerenciado pelo framework
+    fw_init(app);
+    fw_start(app);
+    fw_loop(app, 3); // Simula 3 ticks de execução
+    
+    fw_destroy(app);
+    return 0;
+}
+
+
+ 
