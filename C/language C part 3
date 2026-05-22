@@ -1,0 +1,24 @@
+# C Language — History and Everyday Use (Part 3)
+## Structures, Advanced Pointers, and How the Code Actually Works
+
+---
+
+## 1. Introduction
+
+This part continues with the :contentReference[oaicite:0]{index=0}, focusing on how C code behaves internally when it is executed.
+
+The goal here is not just to show syntax, but to explain what the CPU and memory are actually doing when the code runs.
+
+---
+
+## 2. Structures in C (Memory Grouping Concept)
+
+A `struct` in C is a way to group multiple variables into one memory block.
+
+### Example:
+
+```c
+struct Person {
+    int age;
+    float height;
+};
