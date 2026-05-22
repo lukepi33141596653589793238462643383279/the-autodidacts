@@ -1,0 +1,99 @@
+# C Language — History and Everyday Use (Part 2)
+## Memory, Pointers, Compilation, and Real-World Engineering
+
+---
+
+## 1. Introduction: Moving From Concept to Machine Reality
+
+Continuing the analysis of the :contentReference[oaicite:0]{index=0}, this part focuses on what actually differentiates C from higher-level languages: its explicit memory model, pointer arithmetic, and compilation pipeline.
+
+If Part 1 explained *why C exists*, this part explains *how C behaves at the level of a machine*.
+
+---
+
+## 2. Memory Model: The Core of C Execution
+
+C exposes memory as a continuous, addressable space. Unlike managed languages, nothing is abstracted away.
+
+A running C program typically divides memory into four main regions:
+
+### 2.1 Stack
+
+The stack is used for:
+
+- Function calls
+- Local variables
+- Control flow metadata (return addresses)
+
+Key properties:
+- Automatic allocation and deallocation
+- Very fast access
+- Limited size
+- LIFO (Last-In, First-Out) structure
+
+Each function call creates a **stack frame**, which is destroyed when the function returns.
+
+---
+
+### 2.2 Heap
+
+The heap is used for:
+
+- Dynamic memory allocation (`malloc`, `calloc`, `free`)
+- Data structures that persist beyond function scope
+
+Key properties:
+- Manual memory management
+- Flexible size
+- Slower than stack access
+- Risk of fragmentation and memory leaks
+
+The programmer is fully responsible for lifecycle management.
+
+---
+
+### 2.3 Data Segment
+
+This region stores:
+
+- Global variables
+- Static variables (initialized and uninitialized)
+
+It exists for the entire program runtime.
+
+---
+
+### 2.4 Text Segment
+
+This contains:
+
+- Compiled machine instructions
+- Read-only executable code
+
+It is typically protected to prevent modification during execution.
+
+---
+
+## 3. Pointers: The Defining Feature of C
+
+Pointers are variables that store memory addresses instead of direct values.
+
+### 3.1 Conceptual Model
+
+A pointer represents:
+
+- The location of a value in memory
+- Not the value itself
+
+This allows:
+- Direct memory access
+- Efficient array manipulation
+- Low-level system control
+
+---
+
+### 3.2 Basic Example
+
+```c
+int x = 10;
+int *p = &x;
